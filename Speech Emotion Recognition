@@ -1,0 +1,130 @@
+import pandas as pd
+import numpy as np
+import os
+import seaborn as sns
+import matplotlib.pyplot as plt
+import librosa
+import librosa.display
+from IPython.display import Audio
+import warnings
+warnings.filterwarnings('ignore')
+data_directory = r"C:\Users\BOOMI\Downloads\archive (9)\TESS Toronto emotional speech set data"
+file_paths = []
+emotion_labels = []
+for root, _, files in os.walk(data_directory):
+    for file in files:
+        file_paths.append(os.path.join(root, file))
+        # Extract emotion label from the filename
+        label = file.split('_')[-1]
+        label = label.split('.')[0]
+        emotion_labels.append(label.lower())
+df = pd.DataFrame()
+df['speech_file'] = file_paths
+df['emotion_label'] = emotion_labels
+df.head()
+label_counts = df['emotion_label'].value_counts()
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=label_counts.index, y=label_counts.values, palette='YlGnBu')
+plt.xlabel('Emotion Labels')
+plt.ylabel('Count')
+plt.title('Distribution of Emotion Labels')
+plt.xticks(rotation=45)
+plt.show()
+def plot_waveform(audio_data, sample_rate, emotion):
+    plt.figure(figsize=(10, 4))
+    plt.title(emotion, size=20)
+    plt.plot(np.linspace(0, len(audio_data) / sample_rate, num=len(audio_data)), audio_data)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Amplitude')
+    plt.show()
+def plot_spectrogram(audio_data, sample_rate, emotion):
+    spectrogram = librosa.feature.melspectrogram(y=audio_data, sr=sample_rate)
+    plt.figure(figsize=(11, 4))
+    plt.title(emotion, size=20)
+    librosa.display.specshow(librosa.power_to_db(spectrogram, ref=np.max), y_axis='mel', x_axis='time')
+    plt.colorbar(format='%+2.0f dB')
+    plt.show()
+emotion = 'sad'
+sample_audio_path = np.array(df['speech_file'][df['emotion_label'] == emotion])[0]
+audio_data, sample_rate = librosa.load(sample_audio_path)
+plot_waveform(audio_data, sample_rate, emotion)
+plot_spectrogram(audio_data, sample_rate, emotion)
+Audio(sample_audio_path)
+emotion = 'happy'
+sample_audio_path = np.array(df['speech_file'][df['emotion_label'] == emotion])[0]
+audio_data, sample_rate = librosa.load(sample_audio_path)
+plot_waveform(audio_data, sample_rate, emotion)
+plot_spectrogram(audio_data, sample_rate, emotion)
+Audio(sample_audio_path)
+emotion = 'angry'
+sample_audio_path = np.array(df['speech_file'][df['emotion_label'] == emotion])[0]
+audio_data, sample_rate = librosa.load(sample_audio_path)
+plot_waveform(audio_data, sample_rate, emotion)
+plot_spectrogram(audio_data, sample_rate, emotion)
+Audio(sample_audio_path)
+emotion = 'fear'
+sample_audio_path = np.array(df['speech_file'][df['emotion_label'] == emotion])[0]
+audio_data, sample_rate = librosa.load(sample_audio_path)
+plot_waveform(audio_data, sample_rate, emotion)
+plot_spectrogram(audio_data, sample_rate, emotion)
+Audio(sample_audio_path)
+emotion = 'neutral'
+sample_audio_path = np.array(df['speech_file'][df['emotion_label'] == emotion])[0]
+audio_data, sample_rate = librosa.load(sample_audio_path)
+plot_waveform(audio_data, sample_rate, emotion)
+plot_spectrogram(audio_data, sample_rate, emotion)
+Audio(sample_audio_path)
+emotion = 'disgust'
+sample_audio_path = np.array(df['speech_file'][df['emotion_label'] == emotion])[0]
+audio_data, sample_rate = librosa.load(sample_audio_path)
+plot_waveform(audio_data, sample_rate, emotion)
+plot_spectrogram(audio_data, sample_rate, emotion)
+Audio(sample_audio_path)
+emotion = 'ps'
+sample_audio_path = np.array(df['speech_file'][df['emotion_label'] == emotion])[0]
+audio_data, sample_rate = librosa.load(sample_audio_path)
+plot_waveform(audio_data, sample_rate, emotion)
+plot_spectrogram(audio_data, sample_rate, emotion)
+Audio(sample_audio_path)
+def add_noise(audio_data, noise_level=0.035):
+    noise = noise_level * np.random.uniform() * np.random.normal(size=len(audio_data))
+    noisy_audio = audio_data + noise
+    return noisy_audio
+
+def stretch_audio(audio_data, rate=0.8):
+    return librosa.effects.time_stretch(audio_data, rate)
+
+
+def shift_audio(audio_data, shift_range=1000):
+    shifted_audio = np.roll(audio_data, shift_range)
+    return shifted_audio
+
+def pitch_shift(audio_data, n_steps=2):
+    return librosa.effects.pitch_shift(audio_data, sr=sample_rate, n_steps=n_steps)
+sample_audio_path = np.array(df['speech_file'])[1]
+audio_data, sample_rate = librosa.load(sample_audio_path)
+noisy_audio = add_noise(audio_data)
+plt.figure(figsize=(14, 4))
+plt.plot(np.linspace(0, len(noisy_audio) / sample_rate, num=len(noisy_audio)), noisy_audio)
+plt.xlabel('Time (s)')
+plt.ylabel('Amplitude')
+plt.title('Waveform with Noise')
+plt.show()
+Audio(noisy_audio, rate=sample_rate)
+shifted_audio = shift_audio(audio_data, shift_range=1000)  # Adjust shift_range as needed
+plt.figure(figsize=(14, 4))
+plt.plot(np.linspace(0, len(shifted_audio) / sample_rate, num=len(shifted_audio)), shifted_audio)
+plt.xlabel('Time (s)')
+plt.ylabel('Amplitude')
+plt.title('Shifted Waveform')
+plt.show()
+Audio(shifted_audio, rate=sample_rate)
+pitch_shifted_audio = pitch_shift(audio_data, n_steps=2)
+plt.figure(figsize=(14, 4))
+librosa.display.waveshow(pitch_shifted_audio, sr=sample_rate)
+plt.xlabel('Time (s)')
+plt.ylabel('Amplitude')
+plt.title('Pitch-Shifted Waveform')
+plt.show()
+Audio(pitch_shifted_audio, rate=sample_rate)
